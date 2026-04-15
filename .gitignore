@@ -25,9 +25,9 @@ venv/
 .ruff_cache/
 .pytest_cache/
 
-# DuckDB
-*.duckdb
-*.duckdb.wal
+# SAM
+.aws-sam/
+packaged.yaml
 
 # CLAUDE
 .claude/

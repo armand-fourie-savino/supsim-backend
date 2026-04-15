@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SupSim Backend — Serverless supply chain analytics API
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+  GlueDatabaseName:
+    Type: String
+    Description: Existing Glue Catalog database for Iceberg tables
+  AthenaWorkgroupName:
+    Type: String
+    Default: primary
+  AthenaOutputBucket:
+    Type: String
+    Description: S3 bucket for Athena query results
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        GLUE_DATABASE: !Ref GlueDatabaseName
+        ATHENA_WORKGROUP: !Ref AthenaWorkgroupName
+        ATHENA_OUTPUT_BUCKET: !Ref AthenaOutputBucket
+        POWERTOOLS_SERVICE_NAME: supsim
+    Layers:
+      - !Ref SupsimLayer
+      - !Sub arn:aws:lambda:${AWS::Region}:336392948345:layer:AWSSDKPandas-Python312-Arm64:16
+
+Resources:
+  # ──────────────────────────────────────────────
+  # Auth — Cognito
+  # ──────────────────────────────────────────────
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub supsim
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+      ClientName: !Sub supsim-client
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders:
+        - COGNITO
+
+  # ──────────────────────────────────────────────
+  # API Gateway
+  # ──────────────────────────────────────────────
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Environment
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            AuthorizationScopes: []
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}
+              audience:
+                - !Ref CognitoUserPoolClient
+      CorsConfiguration:
+        AllowOrigins:
+          - "*"
+        AllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+
+  # ──────────────────────────────────────────────
+  # Lambda Layer — Shared Code
+  # ──────────────────────────────────────────────
+  SupsimLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub supsim
+      ContentUri: layers/supsim/
+      CompatibleRuntimes:
+        - python3.12
+      CompatibleArchitectures:
+        - arm64
+    Metadata:
+      BuildMethod: python3.12
+
+  # ──────────────────────────────────────────────
+  # Lambda Functions
+  # ──────────────────────────────────────────────
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/health/
+      Handler: app.lambda_handler
+      Description: Health check endpoint
+      MemorySize: 128
+      Timeout: 5
+      Layers:
+        - !Ref SupsimLayer
+      Events:
+        GetHealth:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
