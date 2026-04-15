@@ -178,7 +178,7 @@ Manages the DuckDB connection for a Fargate task:
 1. Create connection (`duckdb.connect()` in READ_ONLY or in-memory mode)
 2. Install and load extensions (`iceberg`, `httpfs`)
 3. Create AWS secret with IAM credentials
-4. Attach Glue Catalog (`ATTACH '<account_id>' (TYPE s3, ENDPOINT_TYPE GLUE)`)
+4. Attach Glue Catalog (`ATTACH '<account_id>' (TYPE ICEBERG, ENDPOINT_TYPE GLUE)`)
 
 Pattern established in `duck-db-test/duck_db_test_glue.py`.
 

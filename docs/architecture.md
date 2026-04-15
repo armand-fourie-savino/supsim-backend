@@ -51,10 +51,10 @@ This layer is managed by the existing data warehouse pipeline and is read-only f
 
 ### Serving Layer — DuckDB (Embedded)
 
-DuckDB runs embedded inside each ECS Fargate task as the OLAP query engine. It reads Iceberg tables directly from S3 via the Glue Catalog — no separate ingestion pipeline required.
+DuckDB runs embedded inside each ECS Fargate task as the OLAP query engine. It connects to Iceberg tables via the Glue Catalog — no separate ingestion pipeline required.
 
 - **Connection mode**: `READ_ONLY` (or in-memory instances querying S3 externally)
-- **Glue integration**: `ATTACH '<account_id>' (TYPE s3, ENDPOINT_TYPE GLUE)` — validated in `duck-db-test/duck_db_test_glue.py`
+- **Glue integration**: `ATTACH '<account_id>' (TYPE ICEBERG, ENDPOINT_TYPE GLUE)` — validated in `duck-db-test/duck_db_test_glue.py`
 - **Extensions**: `iceberg`, `httpfs` (must be installed and loaded)
 - **Per-worker isolation**: Each Fargate task runs its own DuckDB instance, no shared state
 

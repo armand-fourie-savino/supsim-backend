@@ -67,7 +67,7 @@ class DuckDBManager:
     def _attach_glue_catalog(self) -> None:
         self._conn.execute(
             f"ATTACH '{self._settings.aws_account_id}' "
-            f"(TYPE s3, ENDPOINT_TYPE GLUE);"
+            f"(TYPE ICEBERG, ENDPOINT_TYPE GLUE);"
         )
 
     def get_connection(self) -> duckdb.DuckDBPyConnection:

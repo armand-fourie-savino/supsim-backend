@@ -77,7 +77,7 @@
 DuckDB runs embedded in the FastAPI process — no separate server, cluster, or ingestion pipeline.
 
 - **Zero infrastructure cost**: The query engine is a Python library, included in Fargate compute
-- **Native Iceberg support**: Reads Iceberg tables directly via Glue Catalog (`ATTACH` with `ENDPOINT_TYPE GLUE`)
+- **Native Iceberg support**: Connects to Iceberg tables via Glue Catalog (`ATTACH` with `TYPE ICEBERG, ENDPOINT_TYPE GLUE`)
 - **Native Parquet support**: Also supports direct `read_parquet()` from S3
 - **Sub-second latency at <50GB/tenant**: Vectorized columnar execution with partition pruning
 - **Already validated**: `duck-db-test/duck_db_test_glue.py` and `duck-db-test/duck_db_test_s3.py` prove connectivity to existing S3 data
@@ -193,7 +193,7 @@ The data warehouse already produces Iceberg tables — this is not a new choice 
 Tables are registered in the AWS Glue Catalog:
 - **Account**: `016146521450`
 - **Region**: `af-south-1`
-- **DuckDB attach**: `ATTACH '016146521450' (TYPE s3, ENDPOINT_TYPE GLUE)`
+- **DuckDB attach**: `ATTACH '016146521450' (TYPE ICEBERG, ENDPOINT_TYPE GLUE)`
 
 ## Development Tools
 
