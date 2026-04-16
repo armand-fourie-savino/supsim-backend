@@ -17,15 +17,6 @@ class LambdaStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        self.awswrangler_layer = _lambda.LayerVersion.from_layer_version_arn(
-            self,
-            "AWSWranglerLayer",
-            layer_version_arn=(
-                "arn:aws:lambda:af-south-1:336392948345:"
-                "layer:AWSSDKPandas-Python312-Arm64:15"
-            ),
-        )
-
         self.supsim_layer = _lambda.LayerVersion(
             self,
             "SupsimLayer",
@@ -43,7 +34,7 @@ class LambdaStack(Stack):
             handler="app.lambda_handler",
             code=_lambda.Code.from_asset("lambdas/health"),
             role=lambda_execution_role,
-            layers=[self.supsim_layer, self.awswrangler_layer],
+            layers=[self.supsim_layer],
             memory_size=256,
             timeout=cdk.Duration.seconds(5)
         )
@@ -69,7 +60,7 @@ class LambdaStack(Stack):
             handler="app.stock_summary",
             code=analytics_code,
             role=lambda_execution_role,
-            layers=[self.supsim_layer, self.awswrangler_layer],
+            layers=[self.supsim_layer],
             memory_size=3008,
             timeout=cdk.Duration.seconds(30)
         )
@@ -83,7 +74,7 @@ class LambdaStack(Stack):
             handler="app.customer_summary",
             code=analytics_code,
             role=lambda_execution_role,
-            layers=[self.supsim_layer, self.awswrangler_layer],
+            layers=[self.supsim_layer],
             memory_size=3008,
             timeout=cdk.Duration.seconds(30)
         )
@@ -97,7 +88,7 @@ class LambdaStack(Stack):
             handler="app.movement_metrics",
             code=analytics_code,
             role=lambda_execution_role,
-            layers=[self.supsim_layer, self.awswrangler_layer],
+            layers=[self.supsim_layer],
             memory_size=3008,
             timeout=cdk.Duration.seconds(30)
         )
