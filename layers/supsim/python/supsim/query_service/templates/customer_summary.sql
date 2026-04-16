@@ -38,3 +38,5 @@ AND (
     OR
     m.burn_rate_90d > 0
 )
+
+GROUP BY m.customer_id
