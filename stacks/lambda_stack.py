@@ -16,6 +16,14 @@ class LambdaStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        self.supsim_layer = _lambda.LayerVersion(
+            self,
+            "SupsimLayer",
+            code=_lambda.Code.from_asset("layers/supsim"),
+            compatible_runtimes=[_lambda.Runtime.PYTHON_3_12],
+            compatible_architectures=[_lambda.Architecture.ARM_64],
+        )
+
         health_function = _lambda.Function(
             self,
             "HealthFunction",
@@ -25,6 +33,7 @@ class LambdaStack(Stack):
             handler="app.lambda_handler",
             code=_lambda.Code.from_asset("lambdas/health"),
             role=lambda_execution_role,
+            layers=[self.supsim_layer],
         )
 
         apigwv2.HttpRoute(

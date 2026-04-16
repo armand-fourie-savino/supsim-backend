@@ -25,4 +25,4 @@ Example:
 | --- | --- | --- |
 | `{customer_id}/stock_summary` | `GET` | `analytics.app.stock_summary` |
 | `{customer_id}/customer_summary` | `GET` | `analytics.app.customer_summary` |
-| `{customer_id}/movement_metrics` | `GET` | `analytics.app.movement_metrics` |
+| `{customer_id}/movement_metrics/{stock_code}` | `GET` | `analytics.app.movement_metrics` |
