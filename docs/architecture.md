@@ -58,7 +58,7 @@ AWS Wrangler executes Athena queries against the Glue Catalog / Iceberg tables. 
 
 ### Compute Layer — Lambda Functions
 
-One Lambda function per API endpoint, sharing a common code layer.
+One Lambda Handler per API endpoint, sharing a common code layer per service (ie. analytics/app.py).
 
 - **Thin handlers**: Each Lambda handles HTTP method routing and delegates to services
 - **Shared layer**: PynamoDB models, services, query builders, auth, and utilities
