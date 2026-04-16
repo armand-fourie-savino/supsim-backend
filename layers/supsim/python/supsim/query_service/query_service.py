@@ -31,7 +31,7 @@ class Query:
 
     sql: str
     database: str = "supsim"
-    workgroup: str = "primary"
+    workgroup: str = "savino-users"
 
     _POLL_INTERVAL_S = 0.25
     _POLL_TIMEOUT_S = 300
@@ -108,7 +108,7 @@ class QueryBuilder:
 
     customer_id: str
     database: str = "supsim"
-    workgroup: str = "primary"
+    workgroup: str = "savino-users"
 
     def build_stock_summary_query(self) -> Query:
         sql = _TEMPLATES["stock_summary"].format(customer_id=self.customer_id)
